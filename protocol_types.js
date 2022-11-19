@@ -18,7 +18,7 @@ class SystemConfig {
 	}
 
 	static fromJSON(resp) {
-		console.log('SystemConfig.fromJSON', resp);
+		// console.log('SystemConfig.fromJSON', resp);
 		const res = new SystemConfig();
 		for(const key of Object.keys(res)) {
 			res[key] = resp[key.toUpperCase()];
@@ -39,7 +39,7 @@ class SystemTimestamps {
 	}
 
 	static fromJSON(resp) {
-		console.log('SystemTimestamps.fromJSON', resp);
+		// console.log('SystemTimestamps.fromJSON', resp);
 		const res = new SystemTimestamps();
 		for(const key of Object.keys(res)) {
 			res[key] = resp[key.toUpperCase()];
@@ -61,7 +61,7 @@ class SystemLiveStatus {
 	}
 
 	static fromJSON(resp) {
-		console.log('SystemLiveStatus.fromJSON', resp);
+		// console.log('SystemLiveStatus.fromJSON', resp);
 		const res = new SystemLiveStatus();
 		for(const key of Object.keys(res)) {
 			res[key] = resp[key.toUpperCase()];
@@ -164,6 +164,7 @@ class DeviceID {
 	}
 
 	static fromJSON(name, resp) {
+		// console.log('DeviceID.fromJSON', resp);
 		return new DeviceID(name, resp.DEVICE_ID, resp.TIMESTAMP);
 	}
 }

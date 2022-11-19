@@ -4,16 +4,28 @@ const { NeoCommand } = require('./protocol');
 const { Logger } = require('./log');
 
 class NeoDevice extends events.EventEmitter {
-	constructor(deviceName, protocol, deviceId) {
+	constructor(deviceName, hub, protocol, deviceId, metrics) {
 		super();
 		this.log = Logger.get().withType(this).with({deviceName});
 		this.deviceName = deviceName;
+		this.hub = hub;
 		this.protocol = protocol;
+		this.deviceId = deviceId;
 
-		this.id = deviceId;
 		this.liveStatus = undefined;
 		this.engineersStatus = undefined;
 		this.profile0 = undefined;
+		if(metrics) {
+			this.initMetrics(metrics);
+		}
+	}
+
+	initMetrics(metrics) {
+		this.metrics = metrics;
+		this.metricsLabels = Object.assign({deviceName: this.deviceName, hubId: this.hub.hubId.deviceId}, metrics.defaultLabels);
+	}
+
+	updateMetrics() {
 	}
 
 	async identify() {

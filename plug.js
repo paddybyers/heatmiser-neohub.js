@@ -5,8 +5,13 @@ const { NeoDevice } = require('./device');
 const { Logger } = require('./log');
 
 class NeoPlug extends NeoDevice {
-	constructor(deviceName, protocol, deviceId) {
-		super(deviceName, protocol, deviceId);
+	constructor(deviceName, hub, protocol, deviceId, metrics) {
+		super(deviceName, hub, protocol, deviceId, metrics);
+		this.initMetrics(metrics);
+	}
+
+	initMetrics(metrics) {
+		super.initMetrics(metrics);
 	}
 
 	async setTimedHoldOn(minutes) {

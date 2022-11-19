@@ -5,8 +5,33 @@ const { NeoDevice } = require('./device');
 const { Logger } = require('./log');
 
 class NeoStat extends NeoDevice {
-	constructor(zoneName, protocol, deviceId) {
-		super(zoneName, protocol, deviceId);
+	constructor(zoneName, hub, protocol, deviceId, metrics) {
+		super(zoneName, hub, protocol, deviceId, metrics);
+		if(metrics) {
+			this.initMetrics(metrics);
+		}
+	}
+
+	initMetrics(metrics) {
+		super.initMetrics(metrics);
+		metrics.addGauge('setTemp', 'set temperature', ['hubId', 'deviceName']);
+		metrics.addGauge('currentTemp', 'current temperature', ['hubId', 'deviceName']);
+		metrics.addGauge('activeProfile', 'current active profile', ['hubId', 'deviceName']);
+		metrics.addGauge('heatOn', 'heat on', ['hubId', 'deviceName']);
+		metrics.addGauge('holdOn', 'hold on', ['hubId', 'deviceName']);
+		metrics.addGauge('standby', 'standby', ['hubId', 'deviceName']);
+		metrics.addGauge('offline', 'offline', ['hubId', 'deviceName']);
+	}
+
+	updateMetrics() {
+		super.updateMetrics();
+		this.metrics.setGauge('setTemp', parseFloat(this.liveStatus.set_temp), this.metricsLabels);
+		this.metrics.setGauge('currentTemp', parseFloat(this.liveStatus.actual_temp), this.metricsLabels);
+		this.metrics.setGauge('activeProfile', this.liveStatus.active_profile, this.metricsLabels);
+		this.metrics.setGauge('heatOn', this.liveStatus.heat_on * 1, this.metricsLabels);
+		this.metrics.setGauge('holdOn', this.liveStatus.hold_on * 1, this.metricsLabels);
+		this.metrics.setGauge('standby', this.liveStatus.standby * 1, this.metricsLabels);
+		this.metrics.setGauge('offline', this.liveStatus.offline * 1, this.metricsLabels);
 	}
 
 	async getTempLog() {

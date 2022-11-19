@@ -4,6 +4,7 @@ const vorpal = require('vorpal');
 const util = require('util');
 
 const { NeoClient } = require('./client');
+const { NeoHubServer } = require('./server');
 
 const cli = vorpal();
 addCommands(cli);
@@ -74,6 +75,20 @@ function addCommands(cli) {
 			} catch(err) {
 				cli.activeCommand.log('Unexpected error getting hub status', err);
 			}
+		});
+
+	cli.command('serve')
+		.action(async (args) => {
+			return new Promise(async (resolve, reject) => {
+				const server = new NeoHubServer();
+				try {
+					await server.start();
+					cli.activeCommand.log('Serving metrics for hub');
+				} catch(err) {
+					cli.activeCommand.log('Unexpected error starting metrics server', err);
+					reject(err);
+				}
+			});
 		});
 
 	cli.command('zone list')

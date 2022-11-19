@@ -1,9 +1,8 @@
 const pino = require('pino');
 const pretty = require('pino-pretty');
-const baseLogger = pino({level: 'warn'}, pretty({
+const baseLogger = pino({level: 'info'}, pretty({
 	colorize: true
 }));
-// const baseLogger = pino({level: 'info'});
 
 class Logger {
 	constructor(pino, ctx) {

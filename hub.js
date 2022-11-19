@@ -10,7 +10,7 @@ const { Logger } = require('./log');
 const { arrayDiff } = require('./util');
 
 class NeoHub extends events.EventEmitter {
-	constructor(hubId, protocol) {
+	constructor(hubId, protocol, metrics) {
 		super();
 		this.log = Logger.get().withType(this).with({hubId});
 		this.hubId = hubId;
@@ -21,6 +21,23 @@ class NeoHub extends events.EventEmitter {
 		this.systemLiveStatus = new SystemLiveStatus();
 		this.systemConfig = new SystemConfig();
 		this.definedProfiles = new Map();
+		if(metrics) {
+			this.initMetrics(metrics);
+		}
+	}
+
+	initMetrics(metrics) {
+		this.metrics = metrics;
+		this.metricsLabels = Object.assign({hubId: this.hubId.deviceId}, this.metrics.defaultLabels);
+		metrics.addGauge('ntp', 'ntp running status', ['hubId']);
+		metrics.addGauge('away', 'hub away status', ['hubId']);
+		metrics.addGauge('holiday', 'hub holiday status', ['hubId']);
+	}
+
+	updateMetrics() {
+		this.metrics.setGauge('ntp', (this.systemConfig.ntp_on === 'Running') * 1, this.metricsLabels);
+		this.metrics.setGauge('away', this.systemLiveStatus.hub_away * 1, this.metricsLabels);
+		this.metrics.setGauge('holiday', this.systemLiveStatus.hub_holiday * 1, this.metricsLabels);
 	}
 
 	/***************************************
@@ -52,9 +69,10 @@ class NeoHub extends events.EventEmitter {
 			 		existingZoneNames = Array.from(this.zoneStats.keys()),
 			 		[newZones, deletedZones, remainingZones] = arrayDiff(responseZoneNames, existingZoneNames);
 
+				log.trace('response zones', {responseZones});
 			 	for(const zoneName of newZones) {
 			 		const deviceId = DeviceID.fromJSON(zoneName, responseZones[zoneName]),
-			 			zoneStat = new NeoStat(zoneName, this.protocol, deviceId);
+						zoneStat = new NeoStat(zoneName, this, this.protocol, deviceId, this.metrics);
 
 			 		this.zoneStats.set(zoneName, zoneStat);
 					log.info('added stat', {zoneName});
@@ -73,7 +91,7 @@ class NeoHub extends events.EventEmitter {
 				log.debug('updating devices', {responseDeviceNames, existingDeviceNames, newDevices, deletedDevices, remainingDevices});
 			 	for(const deviceName of newDevices) {
 			 		const deviceId = DeviceID.fromJSON(deviceName, responseDevices[deviceName]),
-			 			plug = new NeoPlug(deviceName, this.protocol, deviceId);
+						plug = new NeoPlug(deviceName, this, this.protocol, deviceId, this.metrics);
 
 			 		this.plugs.set(deviceName, plug);
 					log.info('added plug', {deviceName});
@@ -165,6 +183,16 @@ class NeoHub extends events.EventEmitter {
 			/* no support for timeclocks atm
 			 * ignore TIMESTAMP_PROFILE_TIMERS, TIMESTAMP_PROFILE_TIMERS_0
 			 */
+
+			if(this.metrics) {
+				this.updateMetrics();
+				for(const device of this.zoneStats.values()) {
+					device.updateMetrics();
+				}
+				for(const device of this.plugs.values()) {
+					device.updateMetrics();
+				}
+			}
 		} catch(err) {
 			log.error('error response', {err});
 			throw err;

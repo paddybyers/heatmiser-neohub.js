@@ -18,7 +18,7 @@ function timeout(ms) {
 
 class NeoClient extends events.EventEmitter {
 
-	constructor(config) {
+	constructor(config, metrics) {
 		super();
 		this.config = config || dotenv.config().parsed;
 		this.log = Logger.get().withType(this);
@@ -26,6 +26,7 @@ class NeoClient extends events.EventEmitter {
 		this.protocol = undefined;
 		this.hub = undefined;
 		this.pollTimer = undefined;
+		this.metrics = metrics;
 	}
 
 	async start() {
@@ -114,7 +115,7 @@ class NeoClient extends events.EventEmitter {
 			this.connection = new NeoConnection(this.discoveredAddress.address, this.config);
 			await this.connection.connect();
 			this.protocol = new NeoProtocol(this.connection);
-			this.hub = new NeoHub(this.discoveredAddress, this.protocol);
+			this.hub = new NeoHub(this.discoveredAddress, this.protocol, this.metrics);
 			this.emit('connected');
 		} catch(err) {
 			this.log.warn('connection failed; clearing cached hub address', {err});
@@ -171,7 +172,7 @@ class NeoClient extends events.EventEmitter {
 	async poll() {
 		this.log.info('poll');
 		try {
-			await this.hub.updateNetwork;
+			await this.hub.updateNetwork();
 		} catch(err) {
 			this.log.error('poll error', {err});
 		}
