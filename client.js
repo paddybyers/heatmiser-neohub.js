@@ -10,7 +10,7 @@ const { Properties } = require('./properties');
 
 const discoveryInterval = 15000;
 const connectRetryWait = 5000;
-const pollInterval = 10000;
+const pollInterval = 15000;
 
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
