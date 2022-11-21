@@ -18,4 +18,13 @@ function arrayDiff(first, second) {
 	return [firstOnly, secondOnly, both];
 }
 
+function mapObject(obj, valueXform) {
+	const res = {};
+	for(const [k, v] of Object.entries(obj)) {
+		res[k] = valueXform(v);
+	}
+	return res;
+}
+
 exports.arrayDiff = arrayDiff;
+exports.mapObject = mapObject;

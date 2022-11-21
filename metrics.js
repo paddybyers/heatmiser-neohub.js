@@ -1,4 +1,5 @@
 const client = require('prom-client');
+const { mapObject } = require('./util');
 
 class Metrics {
 	constructor(config) {
@@ -26,7 +27,11 @@ class Metrics {
 		if(!gauge) {
 			throw new Error(`unable to get gauge: ${gauge}`);
 		}
-		gauge.set(Object.assign(labels, this.defaultLabels), value);
+		gauge.set(Object.assign(mapObject(labels, Metrics.escapeLabelValue), this.defaultLabels), value);
+	}
+
+	static escapeLabelValue(value) {
+		return value.replace(' ', '_');
 	}
 
 	static getContentType() {
