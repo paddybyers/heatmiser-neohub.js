@@ -213,6 +213,9 @@ class DeviceProfile {
 
 	static fromJSON(resp) {
 		console.log('DeviceProfile.fromJSON()', resp);
+		if(resp.error) {
+			throw new Error(resp.error);
+		}
 		const res = new DeviceProfile();
 		res.timestamp = resp.TIMESTAMP;
 		const profile = resp.profiles[0];

@@ -122,18 +122,26 @@ class NeoHub extends events.EventEmitter {
 
 			if(existingTimestamps.timestamp_profile_0 < responseTimestamps.timestamp_profile_0) {
 				log.debug('stale profile0 status; updating');
-			 	for(const deviceName of this.zoneStats.keys()) {
-			 		const device = this.zoneStats.get(deviceName);
-			 		const updatedProfile0 = DeviceProfile.fromJSON(await device.getProfile0());
-			 		this.log.debug('updating profile0 for zone', {deviceName, updatedProfile0});
-			 		device.profile0 = updatedProfile0;
-			 	}
-			 	for(const deviceName of this.plugs.keys()) {
-			 		const device = this.plugs.get(deviceName);
-			 		const updatedProfile0 = Profile.fromJSON(await device.getProfile0());
-			 		this.log.debug('updating profile0 for plug', {deviceName, updatedProfile0});
-			 		device.profile0 = updatedProfile0;
-			 	}
+				for(const deviceName of this.zoneStats.keys()) {
+					const device = this.zoneStats.get(deviceName);
+					try {
+						const updatedProfile0 = DeviceProfile.fromJSON(await device.getProfile0());
+						this.log.debug('updating profile0 for zone', {deviceName, updatedProfile0});
+						device.profile0 = updatedProfile0;
+					} catch(err) {
+						this.log.error('unable to read profile0', {deviceName, err});
+					}
+				}
+				for(const deviceName of this.plugs.keys()) {
+					const device = this.plugs.get(deviceName);
+					try {
+						const updatedProfile0 = Profile.fromJSON(await device.getProfile0());
+						this.log.debug('updating profile0 for plug', {deviceName, updatedProfile0});
+						device.profile0 = updatedProfile0;
+					} catch(err) {
+						this.log.error('unable to read profile0', {deviceName, err});
+					}
+				}
 			}
 
 			/* update hub and all devices with the contents of the live data response */
